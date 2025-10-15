@@ -1,89 +1,94 @@
-# Supabase Chatbot API
+# Supabase Chatbot Application
 
-A production-ready chatbot API built with **FastAPI**, **Supabase**, and **LangChain** using **Clean Architecture** principles.
+Une application de chatbot complète construite avec **Clean Architecture**, comprenant:
+- **Backend**: FastAPI + Supabase + LangChain + OpenRouter
+- **Frontend**: React + Vite + TypeScript + Supabase Auth
 
-## Features
+## Fonctionnalités
 
-- Clean Architecture with clear separation of concerns
-- REST API with FastAPI
-- Supabase for database and authentication
-- LangChain integration with OpenRouter support
-- Conversation and message management
-- AI-powered chatbot responses
-- Async/await throughout
-- Type hints with Pydantic
+- Architecture propre (Clean Architecture) avec séparation des responsabilités
+- Authentification utilisateur complète avec Supabase Auth
+- API REST sécurisée avec validation JWT
+- Interface de chat moderne et responsive
+- Gestion des conversations par utilisateur
+- Réponses IA alimentées par LangChain et OpenRouter
+- Row Level Security (RLS) dans Supabase
+- Async/await pour de meilleures performances
 
-## Project Structure
+## Structure du Projet
 
 ```
 supabase-python/
-├── src/
-│   └── chatbot/
-│       ├── domain/              # Business logic & entities
-│       │   ├── entities/        # Domain entities (Conversation, Message)
-│       │   └── repositories/    # Repository interfaces
-│       ├── application/         # Use cases
-│       │   └── use_cases/       # Business use cases
-│       ├── infrastructure/      # External services
-│       │   ├── database/        # Supabase repository implementations
-│       │   ├── langchain/       # LangChain chatbot service
-│       │   ├── supabase/        # Supabase client configuration
-│       │   └── config.py        # Application configuration
-│       └── presentation/        # API layer
-│           ├── api/             # FastAPI routes & dependencies
-│           └── schemas/         # Request/Response schemas
-├── migrations/                  # Database migrations
-├── scripts/                     # Utility scripts
-├── main.py                      # Application entry point
-├── requirements.txt             # Python dependencies
-└── .env                         # Environment variables
-
+├── backend/
+│   ├── src/chatbot/
+│   │   ├── domain/              # Logique métier & entités
+│   │   │   ├── entities/        # User, Conversation, Message
+│   │   │   └── repositories/    # Interfaces de repository
+│   │   ├── application/         # Use cases
+│   │   ├── infrastructure/      # Services externes
+│   │   │   ├── auth/            # Middleware d'authentification JWT
+│   │   │   ├── database/        # Implémentations Supabase
+│   │   │   ├── langchain/       # Service chatbot LangChain
+│   │   │   └── config.py        # Configuration
+│   │   └── presentation/        # Couche API
+│   │       ├── api/             # Routes FastAPI
+│   │       └── schemas/         # Schémas de validation
+│   ├── supabase/migrations/     # Migrations de base de données
+│   ├── main.py                  # Point d'entrée
+│   └── requirements.txt         # Dépendances Python
+│
+└── frontend/
+    ├── src/
+    │   ├── components/          # Composants React
+    │   ├── contexts/            # AuthContext
+    │   ├── lib/                 # Supabase client & API
+    │   └── pages/               # Login, SignUp, Chat
+    ├── package.json             # Dépendances Node
+    └── .env                     # Variables d'environnement
 ```
 
-## Prerequisites
+## Prérequis
 
 - Python 3.11+
-- Supabase account
-- OpenRouter API key (or OpenAI API key)
+- Node.js 18+
+- Compte Supabase
+- Clé API OpenRouter (ou OpenAI)
 
 ## Installation
 
-### 1. Clone the repository
+### 1. Configuration de Supabase
+
+1. Créez un nouveau projet sur [supabase.com](https://supabase.com)
+2. Récupérez votre URL de projet et vos clés API (anon et JWT secret)
+3. Appliquez les migrations SQL dans le Supabase Dashboard → SQL Editor:
+   - `backend/supabase/migrations/001_create_conversations_table.sql`
+   - `backend/supabase/migrations/002_create_messages_table.sql`
+
+### 2. Installation du Backend
 
 ```bash
-git clone <repository-url>
-cd supabase-python
-```
+cd backend
 
-### 2. Create a virtual environment
-
-```bash
+# Créer un environnement virtuel
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+source venv/bin/activate  # Sur Windows: venv\Scripts\activate
 
-### 3. Install dependencies
-
-```bash
+# Installer les dépendances
 pip install -r requirements.txt
-```
 
-### 4. Configure environment variables
-
-Copy `.env.example` to `.env` and update the values:
-
-```bash
+# Configurer les variables d'environnement
 cp .env.example .env
 ```
 
-Edit `.env`:
+Éditez `.env`:
 
 ```env
 # Supabase Configuration
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-supabase-anon-key
+SUPABASE_JWT_SECRET=your-supabase-jwt-secret
 
-# OpenRouter Configuration (for LangChain)
+# OpenRouter Configuration
 OPENROUTER_API_KEY=your-openrouter-api-key
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 LLM_MODEL=openai/gpt-3.5-turbo
@@ -94,230 +99,233 @@ APP_PORT=8000
 DEBUG=True
 ```
 
-### 5. Apply database migrations
+**Note importante**: Le `SUPABASE_JWT_SECRET` se trouve dans votre dashboard Supabase sous Settings → API → JWT Settings → JWT Secret
 
-Go to your Supabase dashboard → SQL Editor and run the following migrations in order:
-
-1. `migrations/001_create_conversations_table.sql`
-2. `migrations/002_create_messages_table.sql`
-3. `migrations/003_create_functions.sql`
-
-Or use the migration script to see the instructions:
+### 3. Installation du Frontend
 
 ```bash
-PYTHONPATH=. python scripts/apply_migrations.py
+cd frontend
+
+# Installer les dépendances
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env
 ```
 
-## Running the Application
+Éditez `frontend/.env`:
 
-### Development mode
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+## Lancement de l'Application
+
+### Démarrer le Backend
 
 ```bash
+cd backend
 PYTHONPATH=. python main.py
 ```
 
-The API will be available at `http://localhost:8000`
+L'API sera disponible sur `http://localhost:8000`
+Documentation API: `http://localhost:8000/docs`
 
-### Using uvicorn directly
-
-```bash
-PYTHONPATH=. uvicorn src.chatbot.presentation.api.app:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Using uvx (recommended)
+### Démarrer le Frontend
 
 ```bash
-uvx uvicorn src.chatbot.presentation.api.app:app --reload
+# Dans le dossier frontend
+npm run dev
 ```
 
-## API Documentation
+L'application web sera disponible sur `http://localhost:5173`
 
-Once the application is running, visit:
+## Utilisation
 
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+1. Ouvrez `http://localhost:5173` dans votre navigateur
+2. Créez un compte (Sign Up)
+3. Vérifiez votre email (configuration Supabase Auth)
+4. Connectez-vous
+5. Créez une nouvelle conversation
+6. Commencez à discuter avec l'IA!
 
 ## API Endpoints
 
-### Health Check
-
-```bash
-GET /health
-```
+Toutes les routes nécessitent une authentification via Bearer token (JWT).
 
 ### Conversations
 
-#### Create a new conversation
-
 ```bash
+# Créer une conversation
 POST /api/v1/conversations
+Authorization: Bearer <token>
 Content-Type: application/json
+{"title": "Ma conversation"}
 
-{
-  "title": "My First Conversation"
-}
-```
+# Lister les conversations de l'utilisateur
+GET /api/v1/conversations
+Authorization: Bearer <token>
 
-#### List all conversations
-
-```bash
-GET /api/v1/conversations?limit=100&offset=0
-```
-
-#### Get a specific conversation
-
-```bash
+# Récupérer une conversation
 GET /api/v1/conversations/{conversation_id}
+Authorization: Bearer <token>
 ```
 
 ### Messages
 
-#### Send a message (and get AI response)
-
 ```bash
+# Envoyer un message et recevoir une réponse IA
 POST /api/v1/conversations/{conversation_id}/messages
+Authorization: Bearer <token>
 Content-Type: application/json
+{"content": "Bonjour!"}
 
-{
-  "content": "Hello, how are you?"
-}
-```
-
-This endpoint will:
-1. Save the user message
-2. Generate an AI response using LangChain
-3. Save the AI response
-4. Return the AI message
-
-#### Get conversation messages
-
-```bash
-GET /api/v1/conversations/{conversation_id}/messages?limit=100&offset=0
-```
-
-## Example Usage
-
-### Using cURL
-
-```bash
-# Create a conversation
-CONV_ID=$(curl -X POST http://localhost:8000/api/v1/conversations \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Test Chat"}' | jq -r '.id')
-
-# Send a message
-curl -X POST http://localhost:8000/api/v1/conversations/$CONV_ID/messages \
-  -H "Content-Type: application/json" \
-  -d '{"content":"What is the capital of France?"}'
-
-# Get all messages
-curl http://localhost:8000/api/v1/conversations/$CONV_ID/messages
-```
-
-### Using Python
-
-```python
-import requests
-
-BASE_URL = "http://localhost:8000/api/v1"
-
-# Create a conversation
-response = requests.post(
-    f"{BASE_URL}/conversations",
-    json={"title": "Python Test Chat"}
-)
-conversation = response.json()
-conv_id = conversation["id"]
-
-# Send a message
-response = requests.post(
-    f"{BASE_URL}/conversations/{conv_id}/messages",
-    json={"content": "Tell me a joke about programming"}
-)
-ai_message = response.json()
-print(f"AI: {ai_message['content']}")
+# Récupérer les messages d'une conversation
+GET /api/v1/conversations/{conversation_id}/messages
+Authorization: Bearer <token>
 ```
 
 ## Architecture
 
-This project follows **Clean Architecture** principles:
+### Backend (Clean Architecture)
 
-### Domain Layer
-- **Entities**: Core business objects (Conversation, Message)
-- **Repository Interfaces**: Define contracts for data access
+**Domain Layer**
+- Entités: User, Conversation, Message
+- Interfaces de repository
 
-### Application Layer
-- **Use Cases**: Business logic operations (CreateConversation, SendMessage, etc.)
+**Application Layer**
+- Use cases: CreateConversation, SendMessage, etc.
+- Logique métier isolée
 
-### Infrastructure Layer
-- **Database**: Supabase repository implementations
-- **LangChain**: AI chatbot service
-- **Config**: Environment configuration
+**Infrastructure Layer**
+- Authentification JWT avec Supabase
+- Repositories Supabase
+- Service LangChain pour l'IA
+- Configuration
 
-### Presentation Layer
-- **API Routes**: FastAPI endpoints
-- **Schemas**: Request/Response validation with Pydantic
-- **Dependencies**: Dependency injection setup
+**Presentation Layer**
+- Routes FastAPI avec middleware d'authentification
+- Schémas Pydantic
+- Injection de dépendances
+
+### Frontend
+
+**Contextes**
+- `AuthContext`: Gestion de l'authentification Supabase
+
+**Pages**
+- `Login`: Connexion utilisateur
+- `SignUp`: Inscription
+- `Chat`: Interface principale de conversation
+
+**Services**
+- `supabase.ts`: Client Supabase
+- `api.ts`: Client API avec intercepteurs d'authentification
+
+## Sécurité
+
+- Row Level Security (RLS) activé sur toutes les tables
+- Validation JWT côté backend
+- Les utilisateurs ne voient que leurs propres conversations
+- Tokens d'authentification stockés de manière sécurisée
+- CORS configuré correctement
 
 ## Technologies
 
-- **FastAPI**: Modern, fast web framework
-- **Supabase**: Open-source Firebase alternative
-- **LangChain**: LLM framework for building AI applications
-- **Pydantic**: Data validation using Python type annotations
-- **Uvicorn**: ASGI web server
+### Backend
+- **FastAPI**: Framework web moderne et rapide
+- **Supabase**: Base de données PostgreSQL + Auth
+- **LangChain**: Framework pour applications IA
+- **OpenRouter**: Gateway pour modèles LLM
+- **Pydantic**: Validation de données
+- **PyJWT**: Validation des tokens JWT
 
-## Development
+### Frontend
+- **React**: Bibliothèque UI
+- **Vite**: Build tool ultra-rapide
+- **TypeScript**: Typage statique
+- **React Router**: Navigation
+- **Supabase JS**: Client Supabase
+- **Axios**: Client HTTP
 
-### Run tests
+## Développement
+
+### Backend
 
 ```bash
+cd backend
+
+# Lancer les tests
 PYTHONPATH=. pytest tests/
-```
 
-### Code formatting
-
-```bash
+# Formatage du code
 black src/
 ruff check src/
-```
 
-### Type checking
-
-```bash
+# Vérification des types
 mypy src/
 ```
 
-## Troubleshooting
-
-### ModuleNotFoundError: No module named 'src'
-
-Always run Python commands with `PYTHONPATH=.`:
+### Frontend
 
 ```bash
+cd frontend
+
+# Lancer en mode développement
+npm run dev
+
+# Build de production
+npm run build
+
+# Preview du build
+npm run preview
+```
+
+## Dépannage
+
+### Backend
+
+**Erreur: ModuleNotFoundError**
+```bash
+# Toujours utiliser PYTHONPATH=.
 PYTHONPATH=. python main.py
 ```
 
-### Supabase connection errors
+**Erreur: Invalid JWT**
+- Vérifiez que `SUPABASE_JWT_SECRET` est correct
+- Le secret JWT se trouve dans Supabase Dashboard → Settings → API → JWT Secret
 
-- Verify your `SUPABASE_URL` and `SUPABASE_KEY` in `.env`
-- Ensure migrations have been applied
-- Check RLS policies if authentication is enabled
+**Erreur de connexion Supabase**
+- Vérifiez `SUPABASE_URL` et `SUPABASE_KEY`
+- Vérifiez que les migrations sont appliquées
 
-### LangChain API errors
+### Frontend
 
-- Verify your `OPENROUTER_API_KEY` in `.env`
-- Check the `LLM_MODEL` is valid for your OpenRouter account
-- Ensure you have sufficient credits/quota
+**Erreur: Cannot connect to API**
+- Vérifiez que le backend est lancé
+- Vérifiez `VITE_API_BASE_URL` dans `.env`
 
-## Contributing
+**Erreur d'authentification**
+- Vérifiez que Supabase Auth est activé
+- Vérifiez `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+## Prochaines Améliorations
 
-## License
+- [ ] Streaming des réponses IA en temps réel
+- [ ] Modification et suppression de conversations
+- [ ] Support du markdown dans les messages
+- [ ] Mode sombre
+- [ ] Export des conversations
+- [ ] Avatars utilisateurs
+- [ ] Notifications en temps réel
+- [ ] Support multilingue
+
+## Contribution
+
+Les contributions sont les bienvenues! N'hésitez pas à ouvrir une issue ou une pull request.
+
+## Licence
 
 MIT License
